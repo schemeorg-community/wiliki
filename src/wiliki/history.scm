@@ -182,7 +182,21 @@
                                     (cv-out pagename) old-time)))
                      ,($$ "View diff from current version")))
                ,(return-to-edit-history pagename)
-               ,(wiliki:format-diff-pre reverted))))
+
+               (hr)
+               ;; FMT-LINES wants a generator, a function which
+               ;; returns new values each time it is called. Also,
+               ;; it's not exported.
+               ,@((with-module wiliki.format
+                               fmt-lines)
+                  ;; The rest is just a generator for the REVERTED list.
+                  (let ((lis reverted))
+                    (lambda ()
+                      (if (null? lis)
+                          (read-from-string "")
+                          (begin0 (car lis)
+                            (set! lis (cdr lis)))))))
+               )))
          (no-history-info pagename)))
    ))
 
