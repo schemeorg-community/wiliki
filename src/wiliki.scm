@@ -631,31 +631,41 @@
                         (sort (wiliki-db-map (lambda (k v) k)) string<?)))))))
 
 (define (cmd-recent-changes)
-  (let ((oddeven (wiliki:make-oddeven)))
-    (html-page
-     (make <wiliki-page>
-       :title (string-append (title-of (wiliki))": "($$ "Recent Changes"))
-       :command "c=r"
-       :content
-       `((table
-          ,@(map (lambda (p)
-                   (let* ((datetime (wiliki:format-time (wiliki-db-rc-mtime p)))
-                          (i (string-index datetime #\space))
-                          (date (substring datetime 0 i))
-                          (time (substring datetime (+ i 1) (string-length datetime))))
-                     `(tr (@ (class ,(oddeven)))
-                          (td (@ (class "pagename"))
-                              ,(wiliki:wikiname-anchor (wiliki-db-rc-key p)))
-                          ;;(td ,(wiliki:format-time (wiliki-db-rc-mtime p)))
-                          (td (@ (class "date"))
-                              ,date)
-                          (td (@ (class "time"))
-                              ,time)
-                          (td (@ (class "elapsed"))
-                              "(" ,(how-long-since (wiliki-db-rc-mtime p)) " ago)")
-                          (td (@ (class "logmsg"))
-                              ,(wiliki-db-rc-logmsg p)))))
-                 (wiliki-db-recent-changes))))))))
+  (html-page
+   (make <wiliki-page>
+     :title (string-append (title-of (wiliki))": "($$ "Recent Changes"))
+     :command "c=r"
+     :content
+     `((table
+        ,@(let loop ((pages (wiliki-db-recent-changes))
+                     (oddeven (wiliki:make-oddeven))
+                     (olddate ""))
+            (if (null? pages)
+                '()
+                (let* ((p (car pages))
+                       (datetime (wiliki:format-time (wiliki-db-rc-mtime p)))
+                       (i (string-index datetime #\space))
+                       (date (substring datetime 0 i))
+                       (time (substring datetime (+ i 1) (string-length datetime))))
+                  (if (not (string=? date olddate))
+                      (cons `(tr (@ (class "date"))
+                                 (td (@ (class "date")
+                                        (span 4))
+                                     ,date))
+                            (loop pages oddeven date))
+                      (cons `(tr (@ (class ,(oddeven)))
+                                 (td (@ (class "pagename"))
+                                     ,(wiliki:wikiname-anchor (wiliki-db-rc-key p)))
+                                 ;;(td ,(wiliki:format-time (wiliki-db-rc-mtime p)))
+                                 ;;(td (@ (class "date"))
+                                 ;;    ,date)
+                                 (td (@ (class "time"))
+                                     ,time)
+                                 (td (@ (class "elapsed"))
+                                     "(" ,(how-long-since (wiliki-db-rc-mtime p)) " ago)")
+                                 (td (@ (class "logmsg"))
+                                     ,(wiliki-db-rc-logmsg p)))
+                            (loop (cdr pages) oddeven date)))))))))))
 
 (define (cmd-search key)
   (let ((results (wiliki-db-search-content-and-title key)))
