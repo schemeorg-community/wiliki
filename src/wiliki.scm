@@ -651,7 +651,7 @@
                   (if (not (string=? date olddate))
                       (cons `(tr (@ (class "date"))
                                  (td (@ (class "date")
-                                        (span 4))
+                                        (colspan 4))
                                      ,date))
                             (loop pages oddeven date))
                       (cons `(tr (@ (class ,(oddeven)))
