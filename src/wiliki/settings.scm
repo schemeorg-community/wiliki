@@ -103,8 +103,9 @@
         ,value
         :domain ,(ref wiliki 'server-name)
         ;; :port ,(x->string (ref wiliki 'server-port))
-        ;; :path ,(ref wiliki 'script-name)
-        :expires ,(+ (sys-time) 31536000))))))
+        :path "/"
+        :expires ,(+ (sys-time) 31536000)))
+     0)))
 
 ;;; Translate a param to the correspondig cookie value
 (define (param->value param)
@@ -129,7 +130,8 @@
       :domain ,(ref wiliki 'server-name)
       ; :port ,(x->string (ref wiliki 'server-port))
       ; :path ,(ref wiliki 'script-name)
-      :expires 0))))
+      :expires 0))
+   0))
 
 ;;; A new page for settings.
 (define (settings-page cookie page)
