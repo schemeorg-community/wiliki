@@ -135,12 +135,6 @@
   (let ((p   (wiliki-db-get pagename #t))
         (now (sys-time)))
 
-    (define (erase-page)
-      (write-log (wiliki) pagename (ref p 'content) "" now logmsg)
-      (set! (ref p 'content) "")
-      (wiliki-db-delete! pagename)
-      (redirect-page (top-page-of (wiliki))))
-
     (define (update-page content)
       (when (page-changed? content (ref p 'content))
         (let1 new-content (expand-writer-macros content)
@@ -193,11 +187,8 @@
     (unless (editable? (wiliki))
       (errorf "Can't edit the page ~s: the database is read-only" pagename))
     (if (or (not (ref p 'mtime)) (eqv? (ref p 'mtime) mtime))
-      (if (and (not (equal? pagename (top-page-of (wiliki))))
-               (string-every #[\s] content))
-        (erase-page)
-        (update-page content))
-      (handle-conflict))))
+        (update-page content)
+        (handle-conflict))))
 
 (define (conflict-page page diff content logmsg donttouch)
   (html-page
