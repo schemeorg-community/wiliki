@@ -29,6 +29,7 @@
 (select-module wiliki)
 
 (use text.diff)
+(use wiliki.settings-user-name)
 
 (define (edit-form preview? pagename content mtime logmsg donttouch)
   (define (buttons)
@@ -50,7 +51,7 @@
            (a (@ (href ,(url "wiki-license")))
               "wiki-license")
            " for more information."))
-     ,@(buttons) ;; ,@(donttouch-checkbox)
+     ;; ,@(buttons) ,@(donttouch-checkbox)
      (br)
      (input (@ (type hidden) (name c) (value c)))
      (input (@ (type hidden) (name p) (value ,pagename)))
@@ -67,7 +68,13 @@
                   (class logmsg)
                   (rows 2)
                   (cols ,(textarea-cols-of (wiliki))))
-               ,logmsg)
+               ,(cond
+                 ((and (zero? (string-length logmsg))
+                       (wiliki:settings-user-name #f))
+                  => (lambda (username)
+                       (string-append " (" username ")")))
+                 (else
+                  logmsg)))
      (br)
      ,@(buttons)
      (br)
@@ -189,14 +196,37 @@
             (push! difflist chunk)))
         (reverse! difflist)))
 
+    (define (empty-logmsg? logmsg)
+      (or (zero? (string-length logmsg))
+          (#/^ *\(/ logmsg)))
+
+    (define (handle-empty-logmsg)
+      (unless (editable? (wiliki))
+        (errorf "Can't edit the page ~s: the database is read-only" pagename))
+      (let ((page (wiliki-db-get pagename #t)))
+        (html-page (make <wiliki-page>
+                     :title pagename
+                     :content
+                     `((p (strong (@ (class "missing-logentry"))
+                                  "Commit failed: Please supply a log entry and put your"
+                                  " signature at the end."))
+                       ,@(edit-form #t pagename
+                                    content mtime logmsg donttouch))))))
+
     ;; The body of cmd-commit-edit
     ;; If content is empty and the page is not the top page, we erase
     ;; the page.
     (unless (editable? (wiliki))
       (errorf "Can't edit the page ~s: the database is read-only" pagename))
-    (if (or (not (ref p 'mtime)) (eqv? (ref p 'mtime) mtime))
-        (update-page content)
-        (handle-conflict))))
+    (cond
+     ((empty-logmsg? logmsg)
+      (handle-empty-logmsg))
+     ((and (ref p 'mtime)
+           (not (eqv? (ref p 'mtime)
+                      mtime)))
+      (handle-conflict))
+     (else
+      (update-page content)))))
 
 (define (conflict-page page diff content logmsg donttouch)
   (html-page
