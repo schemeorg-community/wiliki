@@ -162,6 +162,10 @@
                 :init-form (or (get-meta "SCRIPT_NAME") "/wiliki.cgi"))
    (scheme-keyword-page :init-value "scheme-keywords"
                         :init-keyword :scheme-keyword-page)
+   (banned-content-page :init-value #f
+                        :init-keyword :banned-content-page)
+   (banned-content-passphrase :init-value #f
+                              :init-keyword :banned-content-passphrase)
    (interwikiname :init-value "InterWikiName"
                   :init-keyword :interwikiname)
    (cookie-name   :init-value "WiLiKi"
