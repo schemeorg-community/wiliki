@@ -103,7 +103,7 @@
 (define (unrecognized name)
   (list #`"[[,name]]"))
 
-(define-syntax define-reader-macro 
+(define-syntax define-reader-macro
   (syntax-rules ()
     ((_ (name . args) . body)
      (set! *reader-macro-alist*
@@ -116,7 +116,7 @@
                     *reader-macro-alist*))))
     ))
 
-(define-syntax define-writer-macro 
+(define-syntax define-writer-macro
   (syntax-rules ()
     ((_ (name . args) . body)
      (set! *writer-macro-alist*
@@ -146,7 +146,7 @@
 
 (define (virtual-page? name)
   (not (not (get-virtual-page name))))
-  
+
 (define (arity-matches? list formals)
   (cond ((null? list)
          (or (null? formals) (not (pair? formals))))
