@@ -310,7 +310,7 @@
   (apply wiliki-db-search pred maybe-sorter))
 
 (define (wdb-search-content db key . maybe-sorter)
-  (apply wiliki-db-search-content key maybe-sorter))
+  (apply wiliki-db-search-content-and-title key maybe-sorter))
 
 ;; Creates a link to switch language
 (define (wiliki:language-link page)
@@ -641,19 +641,25 @@
                  (wiliki-db-recent-changes))))))))
   
 (define (cmd-search key)
-  (html-page
-   (make <wiliki-page>
-     :title (string-append (title-of (wiliki))": "($$ "Search results"))
-     :command (format #f "c=s&key=~a" (html-escape-string key))
-     :content
-     `((ul
-        ,@(map (lambda (p)
-                 `(li
-                   ,(wiliki:wikiname-anchor (car p))
-                   ,(or (and-let* ((mtime (get-keyword :mtime (cdr p) #f)))
-                          #`"(,(how-long-since mtime))")
-                        "")))
-               (wiliki-db-search-content key)))))))
+  (let ((results (wiliki-db-search-content-and-title key)))
+    (if (and (not (null? results))
+             (null? (cdr results)))
+        ;; Only one page found, go there directly
+        (redirect-page (caar results))
+        ;; Else, display results
+        (html-page
+         (make <wiliki-page>
+           :title (string-append (title-of (wiliki))": "($$ "Search results"))
+           :command (format #f "c=s&key=~a" (html-escape-string key))
+           :content
+           `((ul
+              ,@(map (lambda (p)
+                       `(li
+                         ,(wiliki:wikiname-anchor (car p))
+                         ,(or (and-let* ((mtime (get-keyword :mtime (cdr p) #f)))
+                                #`"(,(how-long-since mtime))")
+                              "")))
+                     results))))))))
 
 (define (cmd-lwp-view key)
   (let ((page (wiliki-db-get key #f)))

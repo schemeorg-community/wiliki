@@ -36,7 +36,7 @@
           wiliki-db-exists? wiliki-db-record->page
           wiliki-db-get wiliki-db-put! wiliki-db-delete!
           wiliki-db-recent-changes
-          wiliki-db-map wiliki-db-search wiliki-db-search-content)
+          wiliki-db-map wiliki-db-search wiliki-db-search-content-and-title)
   )
 (select-module wiliki.db)
 
@@ -171,13 +171,17 @@
                    (> (get-keyword :mtime (cdr a) 0)
                       (get-keyword :mtime (cdr b) 0))))))
 
-(define (wiliki-db-search-content key . maybe-sorter)
+(define (wiliki-db-search-content-and-title key . maybe-sorter)
   (apply wiliki-db-search
          (lambda (k v)
            (and (not (string-prefix? " " k))
-                (string-contains-ci
-                 (ref (wiliki-db-record->page key v) 'content)
-                 key)))
+                (let ((page (wiliki-db-record->page k v)))
+                  (or (string-contains-ci
+                       (ref page 'title)
+                       key)
+                      (string-contains-ci
+                       (ref page 'content)
+                       key)))))
          maybe-sorter))
 
 (provide "wiliki/db")
