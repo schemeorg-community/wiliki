@@ -80,7 +80,8 @@
 
 (autoload "wiliki/util"    wiliki:page-lines-fold
                            wiliki:recent-changes-alist
-                           wiliki:get-formatted-page-content)
+                           wiliki:get-formatted-page-content
+                           wiliki:make-oddeven)
 
 ;; Version check.
 (when (version<? (gauche-version) "0.7.3")
@@ -618,19 +619,20 @@
                         (sort (wiliki-db-map (lambda (k v) k)) string<?)))))))
 
 (define (cmd-recent-changes)
-  (html-page
-   (make <wiliki-page>
-     :title (string-append (title-of (wiliki))": "($$ "Recent Changes"))
-     :command "c=r"
-     :content
-     `((table
-        ,@(map (lambda (p)
-                 `(tr
-                   (td ,(wiliki:format-time (cdr p)))
-                   (td "(" ,(how-long-since (cdr p)) " ago)")
-                   (td ,(wiliki:wikiname-anchor (car p)))))
-               (wiliki-db-recent-changes)))))))
-
+  (let ((oddeven (wiliki:make-oddeven)))
+    (html-page
+     (make <wiliki-page>
+       :title (string-append (title-of (wiliki))": "($$ "Recent Changes"))
+       :command "c=r"
+       :content
+       `((table
+          ,@(map (lambda (p)
+                   `(tr (@ (class ,(oddeven)))
+                        (td ,(wiliki:format-time (cdr p)))
+                        (td "(" ,(how-long-since (cdr p)) " ago)")
+                        (td ,(wiliki:wikiname-anchor (car p)))))
+                 (wiliki-db-recent-changes))))))))
+  
 (define (cmd-search key)
   (html-page
    (make <wiliki-page>

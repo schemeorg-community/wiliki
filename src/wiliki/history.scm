@@ -56,8 +56,9 @@
                        (cv-out pagename) (ref entry 'timestamp))))
         "current"))
 
-  (define (history-table-row first entry rev prev-timestamp)
-    `((tr ,(td '((rowspan 2)) (x->string rev))
+  (define (history-table-row first entry rev prev-timestamp class)
+    `((tr (@ (class ,class))
+          ,(td '((rowspan 2)) (x->string rev))
           ,(td '() (wiliki:format-time (ref entry 'timestamp)))
           ,(td '() (format "+~a -~a line(s)"
                            (length (ref entry 'added-lines))
@@ -72,7 +73,8 @@
                     `("[Diff to ",(diff-to-prev entry prev-timestamp)"]")
                     `("[Diff to ",(diff-to-current entry)
                       "|",(diff-to-prev entry prev-timestamp)"]"))))
-      (tr ,(td '((colspan 3))
+      (tr (@ (class ,class))
+          ,(td '((colspan 3))
                (let1 l (ref entry 'log-message)
                  (cond ((or (not l) (equal? l ""))
                         "*** no log message ***")
@@ -82,23 +84,24 @@
           )))
 
   (define (history-table entries)
-    `(table
-      (@ (width "90%"))
-      (tr ,(th '((rowspan 2)) "Rev")
-          ,(th '() "Time") ,(th '() "Changes") ,(th '() "Operations"))
-      (tr ,(th '((colspan 3)) "Log"))
-      ,@(if (not (null? entries))
-          (append-map
-           (cut history-table-row (car entries) <> <> <>)
-           entries
-           (iota (length entries) (length entries) -1)
-           (fold-right (lambda (e r) (cons (ref e 'timestamp) r))
-                       '(0) (drop* entries 1)))
-          '())
-      (tr ,(tdr '((colspan 4))
-                "[" `(a (@ (href ,(url "p=~a&c=hd&t=0" (cv-out pagename))))
-                        "Diff from epoch")
-                "]"))))
+    (let ((oddeven (wiliki:make-oddeven)))
+      `(table
+        (@ (width "90%"))
+        (tr ,(th '((rowspan 2)) "Rev")
+            ,(th '() "Time") ,(th '() "Changes") ,(th '() "Operations"))
+        (tr ,(th '((colspan 3)) "Log"))
+        ,@(if (not (null? entries))
+              (append-map
+               (cut history-table-row (car entries) <> <> <> (oddeven))
+               entries
+               (iota (length entries) (length entries) -1)
+               (fold-right (lambda (e r) (cons (ref e 'timestamp) r))
+                           '(0) (drop* entries 1)))
+              '())
+        (tr ,(tdr '((colspan 4))
+                  "[" `(a (@ (href ,(url "p=~a&c=hd&t=0" (cv-out pagename))))
+                          "Diff from epoch")
+                  "]")))))
   
   (html-page
    (make <wiliki-page>

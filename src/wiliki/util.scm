@@ -80,4 +80,15 @@
 (define (wiliki:get-formatted-page-content pagename)
   (wiliki:format-content (wiliki-db-get pagename #t)))
 
+;; A generator for interchangeable odd/even strings, used for zebra
+;; tables.
+(define (wiliki:make-oddeven)
+  (let ((odd? #t))
+    (lambda ()
+      (cond
+       (odd? (set! odd? #f)
+             "odd")
+       (else (set! odd? #t)
+             "even")))))
+
 (provide "wiliki/util")
