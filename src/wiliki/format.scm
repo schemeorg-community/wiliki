@@ -161,7 +161,7 @@
     (define (rest type lis)
       (if (and (null? lis)
                (memq type '(br area link img param hr input col base meta)))
-        '(" />")
+        '(">")
         (list* ">" (reverse! (fold node '() lis)) "</" type "\n>")))
 
     (if (and (pair? body)
