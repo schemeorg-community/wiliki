@@ -340,6 +340,7 @@
           ((string=? "{{{" line)             '(open-verb))
           ((string=? "{{{scheme" line)       '(open-scheme))
           ((string=? "<<<" line)             '(open-quote))
+          ((string-prefix? "<<<" line)       `(open-comment-quote . ,line))
           ((and (string=? ">>>" line)
                 (memq 'blockquote ctx))      '(close-quote))
           ((string-prefix? " " line)         `(pre . ,line))
@@ -378,6 +379,8 @@
              (blockquote ctx (>> block ctx seed)))
             ((close-quote)
              (reverse! seed))
+            ((open-comment-quote)
+             (open-comment-quote (token-value tok) ctx (>> block ctx seed)))
             ((pre)
              (pre tok ctx (>> block ctx seed)))
             ((heading)
@@ -390,6 +393,24 @@
              (table tok ctx (>> block ctx seed)))
             (else
              (error "internal error: unknown token type?")))))))
+
+  (define (open-comment-quote line ctx cont)
+    (let* ((name (substring line 3 (string-length line)))
+           (new-ctx (list 'blockquote))
+           (image (with-module wiliki
+                    (wiliki:user-image name)))
+           (r `(div (@ (class "comment"))
+                    (div (@ (class "portrait"))
+                         ,@(if image
+                               `((img (@ (src ,image)
+                                         (alt ,name))))
+                               '())
+                         (p (a (@ (href ,(with-module wiliki
+                                           (wiliki:user-page name))))
+                               ,name)))
+                    (div (@ (class "comment-text"))
+                         ,@(block (next-token new-ctx) new-ctx '())))))
+      (cont (next-token ctx) ctx r)))
 
   ;; Verbatim
   (define (verb ctx cont)

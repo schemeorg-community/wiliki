@@ -255,6 +255,14 @@
         (cdr (wiliki:page-lines-fold page collect-keywords (cons #t '())))
         #f)))
 
+(define (wiliki:user-page name)
+  (url name))
+
+(define (wiliki:user-image name)
+  (and-let* ((page (wiliki-db-get name))
+             (match (rxmatch #/portrait:([^\n]*)/ (ref page 'content))))
+    (rxmatch-substring match 1)))
+
 ;; Convenient wrapper
 (define (with-db thunk . rwmode)
   (wiliki-with-db (db-path-of (wiliki))
