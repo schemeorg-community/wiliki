@@ -216,6 +216,23 @@
              (x (read-list #\) s)))
         (values x (get-remaining-input-string s))))))
 
+;; A regex for uris. Even readable.
+(define *uri-regex*
+  (string->regexp
+   (string-append
+    "(\\[(\\S+) ([^\\]]+)\\])" ; [url text]
+    "|"
+    "(\\[(\\S+)\\])" ; [url]
+    "|"
+    "("
+    "(http|https|ftp|afs|news|nntp|mid|cid"
+    "|mailto|wais|prospero|telnet|gopher|irc)"
+    ":(//)?"
+    "[-a-zA-Z0-9/@=+$_~*.,;:?!\\'\"()&#%]+" ; Full url chars according to RFC
+    "[-a-zA-Z0-9/@=+$_~*]" ; No punctuation at the end of the URL
+    ")"
+    )))
+
 ;; Find wiki name in the line.
 ;; Correctly deal with nested "[[" and "]]"'s.
 (define (fmt-line ctx line seed)
@@ -235,34 +252,18 @@
              (values (tree->string (reverse (cons pre in))) post))
             (else
              (find-closer post (- level 1) (list* "]]" pre in))))))
-  ;; deal with other inline items between wikinames
-  ;; NB: the precedence is embedded to the order of calling regexp-fold.
-  (define (mailto line seed)
-    (regexp-fold
-     #/\[(mailto:[-\w]+(?:\.[-\w]+)*@[-\w]+(?:\.[-\w]+)+)\s+(.*)\]/
-     cons
-     (lambda (match seed)
-       (cons `(a (@ (href ,(match 1))) ,(match 2)) seed))
-     seed line))
   (define (uri line seed)
     (regexp-fold
-     #/(\[)?(http|https|ftp):(\/\/[^\/?#\s\)\(]*)?([^?#\s\)\(]*(\?[^#\s\)\(]*)?(#[^#\s\)\(]*)?)(\s([^\]\)\(]+)\])?/
-     mailto
+     *uri-regex*
+     cons
      (lambda (match seed)
-       ;; NB: If a server name is not given, we omit the protocol scheme in
-       ;; href attribute, so that the same page would work on both
-       ;; http and https access. (Patch from YAEGASHI Takeshi).
-       (let* ((scheme (match 2))
-              (server (match 3))
-              (path   (match 4))
-              (openp  (match 1))
-              (name   (match 8))
-              (url    (if server #`",|scheme|:,|server|,|path|" path)))
-         (if (and openp name)
-           (cons `(a (@ (href ,url)) ,name) seed)
-           (list* (if openp "[" "")
-                  `(a (@ (href ,url)) ,scheme ":" ,(or server "") ,path)
-                  seed))))
+       (cond
+        ((match 1) (cons `(a (@ (href ,(match 2))) ,(match 3))
+                         seed))
+        ((match 4) (cons `(a (@ (href ,(match 5))) ,(match 5))
+                         seed))
+        ((match 6) (cons `(a (@ (href ,(match 6))) ,(match 6))
+                         seed))))
      seed line))
   (define (nl line seed)
     (regexp-fold
