@@ -245,7 +245,7 @@
      seed line))
   (define (uri line seed)
     (regexp-fold
-     #/(\[)?(http|https|ftp):(\/\/[^\/?#\s]*)?([^?#\s]*(\?[^#\s]*)?(#\S*)?)(\s([^\]]+)\])?/
+     #/(\[)?(http|https|ftp):(\/\/[^\/?#\s\)\(]*)?([^?#\s\)\(]*(\?[^#\s\)\(]*)?(#[^#\s\)\(]*)?)(\s([^\]\)\(]+)\])?/
      mailto
      (lambda (match seed)
        ;; NB: If a server name is not given, we omit the protocol scheme in
