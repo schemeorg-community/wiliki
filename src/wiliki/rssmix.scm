@@ -137,7 +137,7 @@
     ,(html:html
       (html:head
        (html:title (html-escape-string title))
-       (html:link :rel "stylesheet" :href "wiliki-sample.css"
+       (html:link :rel "stylesheet" :href "/scheme.css"
                   :type "text/css"))
       (html:body
        (html:h1 (html-escape-string title))
