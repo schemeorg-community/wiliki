@@ -1,0 +1,53 @@
+/* sample style sheet for wiliki */
+
+body {
+  font-family: verdana, arial, helvetica, sans-serif;
+  color: black;
+  background-color: #eeeedd;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+   text-align: left;
+   color: #006655;
+   background: transparent;
+}
+h1 { font-size: 190% }
+h2 { font-size: 160% }
+h3 { font-size: 130% }
+h4 { font-size: 110% }
+h5 { font-size: 100% }
+h6 { font-size: 100%; font-style: italic }
+
+pre {
+    margin-left: 2em;
+    margin-right: 2em;
+    font-family: monospace;
+    background-color: #ddeeee;
+    border: solid thin #aacccc;
+}
+
+pre.macroerror { 
+    background-color: #ee5555;
+}
+
+blockquote {
+    border-left: solid thick #ddbbaa;
+}
+
+blockquote > blockquote {
+    border-left: solid thick #bb9988;
+}
+
+blockquote > blockquote > blockquote {
+    border-left: solid thick #997766;
+}
+
+dt { font-weight: bold }
+
+td.inbody { background: #dddddd }   /* used in formatted body */
+td.preview { background: #eeddaa }  /* used in preview page */
+
+span.wiliki-alert { background-color: #ff8080; } /* used to warn internal error */
+

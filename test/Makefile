@@ -1,0 +1,23 @@
+GOSH = /usr/bin/gosh
+TEST_OUT = test.log logger.log test.dbm _test
+TESTS = format.scm log.scm test-wiliki.scm
+
+all: gosh-path
+
+gosh-path :
+	echo "$(GOSH)" > gosh-path
+
+check : all
+	@rm -rf $(TEST_OUT)
+	@for t in $(TESTS); do \
+	  $(GOSH) -I. -I../src $$t >> test.log; \
+	done
+
+clean :
+	rm -rf core gosh-path $(TEST_OUT) *~
+
+distclean : clean
+	rm -f Makefile
+
+maintainer-clean : clean
+	rm -f Makefile
