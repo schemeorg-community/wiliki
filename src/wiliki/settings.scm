@@ -5,6 +5,8 @@
   (use www.cgi)
   (use srfi-1)
   (use srfi-2)
+  (use srfi-13)
+  (use srfi-14)
   (export settings:register!
           settings:register-map
           settings:get
@@ -94,13 +96,15 @@
 
 ;;; Return a new cookie for this CGI parameter
 (define (param->cookie wiliki param)
-  (construct-cookie-string
-   `((,(ref wiliki 'cookie-name)
-      ,(base64-encode-string (param->value param))
-      :domain ,(ref wiliki 'server-name)
-      ; :port ,(x->string (ref wiliki 'server-port))
-      ; :path ,(ref wiliki 'script-name)
-      :expires ,(+ (sys-time) 31536000)))))
+  (let ((value (string-delete (base64-encode-string (param->value param))
+                              (list->char-set '(#\newline #\=)))))
+    (construct-cookie-string
+     `((,(ref wiliki 'cookie-name)
+        ,value
+        :domain ,(ref wiliki 'server-name)
+        ;; :port ,(x->string (ref wiliki 'server-port))
+        ;; :path ,(ref wiliki 'script-name)
+        :expires ,(+ (sys-time) 31536000))))))
 
 ;;; Translate a param to the correspondig cookie value
 (define (param->value param)
