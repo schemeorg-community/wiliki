@@ -430,7 +430,7 @@
 (define (default-format-wikiname name)
   (define (inter-wikiname-prefix head)
     (and-let* ((page (wiliki-db-get (ref (wiliki) 'interwikiname)))
-               (rx   (string->regexp #`"^:,|head|:\\s*")))
+               (rx   (string->regexp #`"^:,|head|:\\s*" :case-fold #t)))
       (call-with-input-string (ref page 'content)
         (lambda (p)
           (let loop ((line (read-line p)))
