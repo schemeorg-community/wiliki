@@ -423,7 +423,9 @@
                                            (wiliki:user-page name))))
                                ,name)))
                     (div (@ (class "comment-text"))
-                         ,@(block (next-token new-ctx) new-ctx '())))))
+                         ,@(block (next-token new-ctx) new-ctx '()))
+                    (br (@ (style "clear: both")))
+                    )))
       (cont (next-token ctx) ctx r)))
 
   ;; Verbatim
