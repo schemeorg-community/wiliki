@@ -58,7 +58,7 @@
 
   (define (history-table-row first entry rev prev-timestamp)
     `((tr ,(td '((rowspan 2)) (x->string rev))
-          ,(td '() (format-time (ref entry 'timestamp)))
+          ,(td '() (wiliki:format-time (ref entry 'timestamp)))
           ,(td '() (format "+~a -~a line(s)"
                            (length (ref entry 'added-lines))
                            (length (ref entry 'deleted-lines))))
@@ -125,7 +125,7 @@
     (let* ((diffpage (wiliki-log-diff* entries current)))
       `((h2 (stree ,(format ($$ "Changes of ~a since ~a")
                             (wiliki:wikiname-anchor-string pagename)
-                            (format-time old-time))))
+                            (wiliki:format-time old-time))))
         ,(explanation)
         ,(return-to-edit-history pagename)
         ,(wiliki:format-diff-pre diffpage))))
@@ -143,8 +143,8 @@
                             '() oldpage newpage)))
       `((h2 (stree ,(format ($$ "Changes of ~a between ~a and ~a")
                             (wiliki:wikiname-anchor-string pagename)
-                            (format-time old-time)
-                            (format-time new-time))))
+                            (wiliki:format-time old-time)
+                            (wiliki:format-time new-time))))
         ,(explanation)
         ,(return-to-edit-history pagename)
         ,(wiliki:format-diff-pre (reverse! rdiff)))))
@@ -176,7 +176,7 @@
                   (reverted (wiliki-log-revert* entries (ref page 'content))))
              `((h2 (stree ,(format ($$ "Content of ~a at ~a")
                                    (wiliki:wikiname-anchor-string pagename)
-                                   (format-time old-time))))
+                                   (wiliki:format-time old-time))))
                (p (@ (style "text-align:right"))
                   (a (@ (href ,(url "~a&c=hd&t=~a"
                                     (cv-out pagename) old-time)))
