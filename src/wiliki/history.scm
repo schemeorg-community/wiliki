@@ -76,11 +76,9 @@
       (tr (@ (class ,class))
           ,(td '((colspan 3))
                (let1 l (ref entry 'log-message)
-                 (cond ((or (not l) (equal? l ""))
-                        "*** no log message ***")
-                       ((> (string-length l) 80)
-                        (string-take l 80))
-                       (else l))))
+                 (if (or (not l) (equal? l ""))
+                     "*** no log message ***"
+                     l)))
           )))
 
   (define (history-table entries)
