@@ -160,6 +160,8 @@
                 :init-form (or (get-meta "SCRIPT_NAME") "/wiliki.cgi"))
    (scheme-keyword-page :init-value "scheme-keywords"
                         :init-keyword :scheme-keyword-page)
+   (interwikiname :init-value "InterWikiName"
+                  :init-keyword :interwikiname)
    ;; debug level
    (debug-level :accessor debug-level    :init-keyword :debug-level
                 :init-value 0)
@@ -415,7 +417,7 @@
 
 (define (default-format-wikiname name)
   (define (inter-wikiname-prefix head)
-    (and-let* ((page (wiliki-db-get "InterWikiName"))
+    (and-let* ((page (wiliki-db-get (ref (wiliki) 'interwikiname)))
                (rx   (string->regexp #`"^:,|head|:\\s*")))
       (call-with-input-string (ref page 'content)
         (lambda (p)
