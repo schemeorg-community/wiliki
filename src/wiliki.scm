@@ -391,7 +391,7 @@
   (define (reader-macro-wikiname? name)
     (cond ((string-prefix? "$$" name)
            (handle-reader-macro name))
-          ((or (string-index name #[\s])
+          ((or (string-prefix? " " name)
                (string-prefix? "$" name))
            ;;invalid wiki name
            (list "[[" name "]]"))
