@@ -637,6 +637,7 @@
      :command "c=r"
      :content
      `((table
+        (@ (class "recent-changes"))
         ,@(let loop ((pages (wiliki-db-recent-changes))
                      (oddeven (wiliki:make-oddeven))
                      (olddate ""))

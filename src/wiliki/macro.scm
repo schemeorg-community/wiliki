@@ -273,7 +273,7 @@
 ;; These are just samples.
 
 (define-virtual-page (#/^RecentChanges$/ (_))
-  `((table
+  `((table (@ (class "recent-changes"))
      ,@(map (lambda (p)
               `(tr (td ,(wiliki:format-time (wiliki-db-rc-mtime p)))
                    (td "(" ,(how-long-since (wiliki-db-rc-mtime p)) " ago)")
