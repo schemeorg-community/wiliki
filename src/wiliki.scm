@@ -254,7 +254,11 @@
         seed))))
   (let ((page (wiliki-db-get (ref (wiliki) 'scheme-keyword-page))))
     (if page
-        (cdr (wiliki:page-lines-fold page collect-keywords (cons #t '())))
+        (cdr (wiliki:page-lines-fold page
+                                     collect-keywords
+                                     (cons #t   ; We begin in keywords
+                                           '()) ; And have none collected
+                                     :follow-includes? #t))
         #f)))
 
 (define (wiliki:user-page name)
