@@ -1,0 +1,102 @@
+*** srfi-14.scm	20 Nov 2003 16:12:12 -0000	1.12
+--- srfi-14.scm	24 Dec 2003 08:15:25 -0000
+***************
+*** 239,267 ****
+  (define ucs-range->char-set!
+    (if (eq? (gauche-character-encoding) 'utf-8)
+        integer-range->char-set!
+!       (lambda (low upper error? base)
+!         (when (< low 0)
+!           (if error?
+                (error "argument out of range:" low)
+                (set! low 0)))
+!         (if (< upper 128)
+!             (%char-set-add-range! base low (- upper 1))
+!             (begin
+!               (when (< low 128)
+!                 (%char-set-add-range! base low 128)
+!                 (set! low 128))
+!               (do ((i low (+ i 1)))
+!                   ((>= i upper) base)
+!                 (let ((c (ucs->char i)))
+!                   (if c
+!                       (%char-set-add-range! base c c)
+!                       (if error?
+!                           (error "unicode character #\\u~8,'0x is not supported in the native character set (~a)"
+!                                  i (gauche-character-encoding)))))
+!                 )))
+!         )
+!       ))
+!                   
+  (define (->char-set obj)
+    (cond ((list? obj)   (list->char-set obj))
+          ((string? obj) (string->char-set obj))
+--- 239,306 ----
+  (define ucs-range->char-set!
+    (if (eq? (gauche-character-encoding) 'utf-8)
+        integer-range->char-set!
+!       (letrec
+!           ((%common-ranges
+!             (with-error-handler
+!                 (lambda (err . args) (warn "couldn't load unicode ranges") #f)
+!               (lambda ()
+!                 (with-input-from-file
+!                     (format "~A/srfi-14/ranges.dat" (gauche-library-directory))
+!                   read))))
+!            (%search-range
+!             (lambda (i)
+!               (let loop ((tree %common-ranges))
+!                 (and tree
+!                      (let* ((cur (car tree))
+!                             (start (car cur)))
+!                        (cond
+!                          ((< i start)
+!                           (loop (cadr tree)))
+!                          ((>= i start)
+!                           (if (<= i (cadr cur))
+!                             cur
+!                             (loop (caddr tree))))))))))
+!            (%out-of-range
+!             (lambda (i)
+!               (errorf "unicode character #\\u~8,'0x is not supported in the native character set (~a)"
+!                       i (gauche-character-encoding))))
+!            )
+!         (lambda (low upper error? base)
+!           (when (< low 0)
+!             (if error?
+                (error "argument out of range:" low)
+                (set! low 0)))
+!           (cond
+!             ((< upper 128)
+!              (%char-set-add-range! base low (- upper 1)))
+!             ((%search-range low)
+!              => (lambda (r)
+!                   (let* ((start (car r))
+!                          (end (cadr r))
+!                          (end2 (min end (- upper 1)))
+!                          (val (list-ref r 2 #f)))
+!                     (cond
+!                       (val
+!                        (%char-set-add-range! base val (+ val (- end2 start))))
+!                       (error? (%out-of-range low)))
+!                     (if (> (- upper 1) end)
+!                       (ucs-range->char-set! (+ end 1) upper error? base)
+!                       base))))
+!             ((%search-range (- upper 1))
+!              => (lambda (r)
+!                   (ucs-range->char-set! (car r) upper error? base)
+!                   (ucs-range->char-set! low (car r) error? base)))
+!             (else
+!              (when (< low 128)
+!                (%char-set-add-range! base low 128)
+!                (set! low 128))
+!              (do ((i low (+ i 1)))
+!                  ((>= i upper) base)
+!                (let ((c (ucs->char i)))
+!                  (if c
+!                    (%char-set-add-range! base c c)
+!                    (if error? (%out-of-range i)))))))))))
+! 
+  (define (->char-set obj)
+    (cond ((list? obj)   (list->char-set obj))
+          ((string? obj) (string->char-set obj))

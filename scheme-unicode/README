@@ -1,0 +1,65 @@
+
+                           scheme-unicode
+                           --------------
+
+                     Unicode utilities for Scheme
+
+                     http://synthcode.com/scheme/
+
+                            version 0.1
+                            Dec 24, 2003
+
+
+This directory contains a general library for handling Unicode strings
+in Scheme (currently only supports Gauche).  The lang.char-set module
+provides char-sets for all standard Unicode properties, and the
+lang.case-map module provides generalized upcase, downcase and titlecase
+procedures which work on strings or ports and take an optional locale
+string parameter.  The resulting strings may be denormalized - future
+versions of this library will include normalization routines and more
+general access to the Unicode Character Database (UCB).
+
+To install run "make install".
+
+An optional patch to make SRFI-14's ucs-range->char-set faster for
+non-Unicode Gauche is also included.  This can be installed with "make
+srfi-14-patch".  This takes advantage of the fact in Unicode a fair
+number of consecutive ranges correspond to ranges in JIS, and an even
+greater number of ranges are not handled by JIS.  The common ranges are
+as follows:
+
+ u: 0080-009F => j: 8F8080-8F809F (32)  ;; meta chars
+ u: 00B7-00D6 => j: A9AE-A9CD (32)      ;; symbols
+ u: 00D8-00F6 => j: A9CE-A9EC (31)      ;; latin
+ u: 00F8-0100 => j: A9ED-A9F5 ( 9)      ;; latin
+ u: 02E5-02E9 => j: ABE0-ABE4 ( 5)      ;; line-drawing
+ u: 0391-03A1 => j: A6A1-A6B1 (17)      ;; uppercase Greek
+ u: 03A3-03A9 => j: A6B2-A6B8 ( 7)      ;; uppercase Greek
+ u: 03B1-03C1 => j: A6C1-A6D1 (17)      ;; lowercase Greek
+ u: 03C3-03C9 => j: A6D2-A6D8 ( 7)      ;; lowercase Greek
+ u: 0410-0415 => j: A7A1-A7A6 ( 6)      ;; uppercase Cyrillic
+ u: 0416-042F => j: A7A8-A7C1 (26)      ;; uppercase Cyrillic
+ u: 0430-0435 => j: A7D1-A7D6 ( 6)      ;; lowercase Cyrillic
+ u: 0436-044F => j: A7D8-A7F1 (26)      ;; lowercase Cyrillic
+ u: 2160-216A => j: ADB5-ADBF (11)      ;; uppercase roman numerals I..XI
+ u: 2170-217B => j: ACB5-ACC0 (12)      ;; lowercase roman numerals I..XII
+ u: 23BE-23CC => j: A7C2-A7D0 (15)      ;; ????
+ u: 2460-2473 => j: ADA1-ADB4 (20)      ;; circled numbers
+ u: 24D0-24E9 => j: ACC1-ACDA (26)      ;; circled letters
+ u: 24EB-24F4 => j: ACAB-ACB4 (10)      ;; ????
+ u: 24F5-24FE => j: A6DA-A6E3 (10)      ;; ????
+ u: 2776-277F => j: ACA1-ACAA (10)      ;; solid circled numbers
+ u: 3008-3011 => j: A1D2-A1DB (10)      ;; extended brackets
+ u: 3041-3096 => j: A4A1-A4F6 (86)      ;; hiragana
+ u: 30A1-30F6 => j: A5A1-A5F6 (86)      ;; katakana
+ u: 31F0-31F9 => j: A6EE-A6F7 (10)      ;; ????
+ u: 31FA-31FF => j: A6F9-A6FE ( 6)      ;; ????
+ u: 3251-325F => j: A8C1-A8CF (15)      ;; ????
+ u: 32A4-32A8 => j: ADE5-ADE9 ( 5)      ;; circled hi/mid/lo/left/right kanji
+ u: 32B1-32BF => j: A8D0-A8DE (15)      ;; ????
+ u: 32D0-32E3 => j: ACDB-ACEE (20)      ;; circled katakana
+ u: FF10-FF19 => j: A3B0-A3B9 (10)      ;; wide digits 0-9
+ u: FF21-FF3A => j: A3C1-A3DA (26)      ;; wide uppercase latin
+ u: FF41-FF5A => j: A3E1-A3FA (26)      ;; wide lowercase latin
+ u: FF61-FF9F => j: 8EA1-8EDF (63)      ;; miscellaneous symbols
+

@@ -17,7 +17,7 @@ SCMFILES = wiliki.scm \
            wiliki/pasttime.scm \
 	   wiliki/version.scm
 
-TARGET = $(SCMFILES) wiliki/msgs.jp
+TARGET = $(SCMFILES) wiliki/msgs.jp dbm/gdbm-ci.scm
 
 GENERATED = wiliki/msgs.jp wiliki/version.scm
 

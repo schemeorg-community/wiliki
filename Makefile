@@ -17,6 +17,7 @@ check:
 install: all
 	cd src; $(MAKE) install
 	cd doc; $(MAKE) install
+	cd scheme-unicode; $(MAKE) install
 
 distclean: clean
 	cd src; $(MAKE) distclean
