@@ -53,7 +53,7 @@
       >\n"
       ,(rdf-channel
         full-url
-        (rdf-title (top-page-of self))
+        (rdf-title (title-of self))
         (rdf-link  full-url)
         (rdf-description (description-of self))
         (rdf-items-seq
