@@ -275,9 +275,9 @@
 (define-virtual-page (#/^RecentChanges$/ (_))
   `((table
      ,@(map (lambda (p)
-              `(tr (td ,(wiliki:format-time (cdr p)))
-                   (td "(" ,(how-long-since (cdr p)) " ago)")
-                   (td ,(wiliki:wikiname-anchor (car p)))))
+              `(tr (td ,(wiliki:format-time (wiliki-db-rc-mtime p)))
+                   (td "(" ,(how-long-since (wiliki-db-rc-mtime p)) " ago)")
+                   (td ,(wiliki:wikiname-anchor (wiliki-db-rc-key p)))))
             (wiliki-db-recent-changes)))))
 
 (provide "wiliki/macro")

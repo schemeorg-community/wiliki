@@ -36,6 +36,7 @@
           wiliki-db-exists? wiliki-db-record->page
           wiliki-db-get wiliki-db-put! wiliki-db-delete!
           wiliki-db-recent-changes
+          wiliki-db-rc-key wiliki-db-rc-mtime wiliki-db-rc-logmsg
           wiliki-db-map wiliki-db-search wiliki-db-search-content-and-title)
   )
 (select-module wiliki.db)
@@ -127,16 +128,33 @@
                             :mtime (ref page 'mtime)
                             :muser (ref page 'muser)))
                (display (ref page 'content)))))
-        (donttouch (get-keyword :donttouch option #f)))
+        (donttouch (get-keyword :donttouch option #f))
+        (logmsg (get-keyword :logmsg option "")))
     (dbm-put! db key s)
     (unless #f ; donttouch
-      (let1 r (alist-delete key
-                            (read-from-string
-                             (dbm-get db *recent-changes* "()")))
+      (let1 r (read-from-string (dbm-get db *recent-changes* "()"))
         (dbm-put! db *recent-changes*
                   (write-to-string
-                   (acons key (ref page 'mtime) (take* r 49))))))
+                   (clean-rc
+                    (cons (list key (ref page 'mtime) logmsg)
+                          r))))))
     ))
+
+;; Clean RC according to MAX-RC-SIZE and MAX-RC-AGE
+(define (clean-rc rc)
+  (let* ((w (with-module wiliki (wiliki)))
+         (max-rc-size (ref w 'max-rc-size))
+         (max-rc-age (ref w 'max-rc-age))
+         (age-limit (and max-rc-age
+                         (- (sys-time)
+                            max-rc-age)))
+         (age-cleaned (remove! (lambda (entry)
+                                 (> age-limit
+                                    (wiliki-db-rc-mtime entry)))
+                               rc)))
+    (if max-rc-size
+        (take* age-cleaned max-rc-size)
+        age-cleaned)))
 
 ;; WILIKI-DB-DELETE! key
 (define (wiliki-db-delete! key)
@@ -150,6 +168,19 @@
 ;; WILIKI-DB-RECENT-CHANGES
 (define (wiliki-db-recent-changes)
   (read-from-string (dbm-get (check-db) *recent-changes* "()"))  )
+
+;; These are accessors for the recent changes entries.
+;; It used to be (key . mtime), and is now (key mtime logmsg)
+(define (wiliki-db-rc-key entry)
+  (car entry))
+(define (wiliki-db-rc-mtime entry)
+  (if (pair? (cdr entry))
+      (cadr entry)
+      (cdr entry)))
+(define (wiliki-db-rc-logmsg entry)
+  (if (pair? (cdr entry))
+      (caddr entry)
+      ""))
 
 ;; higher-order ops
 (define (wiliki-db-map proc)

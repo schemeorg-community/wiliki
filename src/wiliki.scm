@@ -166,6 +166,11 @@
                   :init-keyword :interwikiname)
    (cookie-name   :init-value "WiLiKi"
                   :init-keyword :cookie-name)
+   ;; These are the old WiLiKi defaults
+   (max-rc-size :init-value 49
+                :init-keyword :max-rc-size)
+   (max-rc-age :init-value #f
+               :init-keyword :max-rc-age)
    ;; debug level
    (debug-level :accessor debug-level    :init-keyword :debug-level
                 :init-value 0)
@@ -634,12 +639,24 @@
        :content
        `((table
           ,@(map (lambda (p)
-                   `(tr (@ (class ,(oddeven)))
-                        (td ,(wiliki:format-time (cdr p)))
-                        (td "(" ,(how-long-since (cdr p)) " ago)")
-                        (td ,(wiliki:wikiname-anchor (car p)))))
+                   (let* ((datetime (wiliki:format-time (wiliki-db-rc-mtime p)))
+                          (i (string-index datetime #\space))
+                          (date (substring datetime 0 i))
+                          (time (substring datetime (+ i 1) (string-length datetime))))
+                     `(tr (@ (class ,(oddeven)))
+                          (td (@ (class "pagename"))
+                              ,(wiliki:wikiname-anchor (wiliki-db-rc-key p)))
+                          ;;(td ,(wiliki:format-time (wiliki-db-rc-mtime p)))
+                          (td (@ (class "date"))
+                              ,date)
+                          (td (@ (class "time"))
+                              ,time)
+                          (td (@ (class "elapsed"))
+                              "(" ,(how-long-since (wiliki-db-rc-mtime p)) " ago)")
+                          (td (@ (class "logmsg"))
+                              ,(wiliki-db-rc-logmsg p)))))
                  (wiliki-db-recent-changes))))))))
-  
+
 (define (cmd-search key)
   (let ((results (wiliki-db-search-content-and-title key)))
     (if (and (not (null? results))

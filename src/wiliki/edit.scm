@@ -147,7 +147,9 @@
           (write-log (wiliki) pagename (ref p 'content) new-content now logmsg)
           (set! (ref p 'mtime) now)
           (set! (ref p 'content) new-content)
-          (wiliki-db-put! pagename p :donttouch donttouch)))
+          (wiliki-db-put! pagename p
+                          :donttouch donttouch
+                          :logmsg logmsg)))
       (redirect-page pagename))
 
     ;; check if page has been changed.  we should ignore the difference

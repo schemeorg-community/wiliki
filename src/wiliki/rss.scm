@@ -39,7 +39,7 @@
 
 ;; API
 (define (rss-page db)
-  (rss-format (take* (wiliki-db-recent-changes) 15)))
+  (rss-format (wiliki-db-recent-changes)))
 
 (define (rss-format entries)
   (let* ((self (wiliki))
@@ -60,11 +60,12 @@
          (map (lambda (entry) (rdf-li (url-full "~a" (cv-out (car entry)))))
               entries)))
       ,(map (lambda (entry)
-              (let1 url (url-full "~a" (cv-out (car entry)))
+              (let1 url (url-full "~a" (cv-out (wiliki-db-rc-key entry)))
                 (rdf-item url
-                          (rdf-title (car entry))
+                          (rdf-title (wiliki-db-rc-key entry))
                           (rdf-link url)
-                          (dc-date  (cdr entry)))))
+                          (rdf-description (wiliki-db-rc-logmsg entry))
+                          (dc-date (wiliki-db-rc-mtime entry)))))
             entries)
       "</rdf:RDF>\n")))
 
