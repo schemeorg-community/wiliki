@@ -41,9 +41,15 @@
     `((input (@ (type checkbox) (name donttouch) (value on) (id donttouch)
                 ,@(if donttouch '((checked checked)) '())))
       (label (@ (for donttouch)) ,($$ "Don't update 'Recent Changes'"))))
-  
+
   `((form
      (@ (method POST) (action ,(cgi-name-of (wiliki))))
+     (p (b "By posting, you will grant the rights to modify and "
+           "distribute your submission under the terms of the Attribution "
+           "ShareAlike 2.0 license. See "
+           (a (@ (href ,(url "wiki-license")))
+              "wiki-license")
+           " for more information."))
      ,@(buttons) ,@(donttouch-checkbox)
      (br)
      (input (@ (type hidden) (name c) (value c)))
