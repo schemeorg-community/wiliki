@@ -152,7 +152,8 @@
     (define (update-page content)
       (when (page-changed? content (ref p 'content))
         (let1 new-content (expand-writer-macros content)
-          (write-log (wiliki) pagename (ref p 'content) new-content now logmsg)
+          (unless (banned-content-page? (wiliki) pagename)
+            (write-log (wiliki) pagename (ref p 'content) new-content now logmsg))
           (set! (ref p 'mtime) now)
           (set! (ref p 'content) new-content)
           (wiliki-db-put! pagename p
@@ -221,12 +222,13 @@
                      ,@(edit-form #t pagename
                                   content mtime logmsg donttouch)))))
 
-    (define (handle-banned-content)
+    (define (handle-banned-content content)
       (html-page (make <wiliki-page>
                    :title pagename
                    :content
                    `((p (strong (@ (class "permission-denied"))
-                                "Commit failed: Your page contained banned content."))
+                                "Commit failed: Your page contained the following banned content: "
+                                content))
                      ,@(edit-form #t pagename
                                   content mtime logmsg donttouch)))))
 
@@ -241,8 +243,8 @@
      ((and (banned-content-page? (wiliki) pagename)
            (not (banned-content-passphrase? (wiliki) logmsg)))
       (handle-banned-content-permission-denied))
-     ((banned-content? (wiliki) content)
-      (handle-banned-content))
+     ((banned-content (wiliki) content)
+      => handle-banned-content)
      ((and (ref p 'mtime)
            (not (eqv? (ref p 'mtime)
                       mtime)))

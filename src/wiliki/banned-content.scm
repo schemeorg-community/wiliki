@@ -7,7 +7,7 @@
   (use wiliki)
   (export banned-content-page?
           banned-content-passphrase?
-          banned-content?))
+          banned-content))
 (select-module wiliki.banned-content)
 
 ;;; Is this the banned content page?
@@ -21,15 +21,7 @@
     (and bcpp
          (string-prefix? bcpp logmsg))))
 
-(define (banned-content? wiliki content)
-  (let* ((bcp (ref wiliki 'banned-content-page))
-         (bc (and bcp
-                  (wiliki-db-get bcp))))
-    (and bc
-         (rxmatch (banned-content-regex bc)
-                  content))))
-
-(define (banned-content-regex page)
+(define (banned-content wiliki content)
   (define (collect-regex line seed)
     (let ((in-pre? (car seed))
           (regexes (cdr seed)))
@@ -39,14 +31,24 @@
        ((and (not in-pre?)
              (string=? "{{{" line))
         (cons #t regexes))
+       ((string=? "" line)
+        seed)
        (in-pre?
         (cons #t
               (cons line regexes)))
        (else
         seed))))
-  (if page
-      (let ((list (cdr (wiliki:page-lines-fold page
-                                               collect-regex
-                                               (cons #f '())))))
-        (string-append "(" (string-join list "|") ")"))
-      #f))
+  (let* ((name (ref wiliki 'banned-content-page))
+         (page (and name
+                    (wiliki-db-get name))))
+    (and page
+         (let loop ((rxs (cdr (wiliki:page-lines-fold page
+                                                      collect-regex
+                                                      (cons #f '())))))
+           (cond
+            ((null? rxs)
+             #f)
+            ((rxmatch (car rxs) content)
+             (car rxs))
+            (else
+             (loop (cdr rxs))))))))
