@@ -185,7 +185,11 @@
 ;; Various gadgets -----------------------------------------
 
 (define (cgi-name-of wiliki)
-  (and wiliki (sys-basename (script-name-of wiliki))))
+  (and wiliki
+       (let ((name (sys-basename (script-name-of wiliki))))
+         (if (string=? name "")
+             "/"
+             name))))
 
 (define (full-script-path-of wiliki)
   (and wiliki
