@@ -38,6 +38,9 @@ install :
 	if test ! -d $(SCM_INSTALL_DIR)/wiliki; then \
 	  $(INSTALL) -d $(SCM_INSTALL_DIR)/wiliki; \
 	fi
+	if test ! -d $(SCM_INSTALL_DIR)/dbm; then \
+	  $(INSTALL) -d $(SCM_INSTALL_DIR)/dbm; \
+	fi
 	for f in $(TARGET); do \
 	  $(INSTALL) -m 444 $$f $(SCM_INSTALL_DIR)/$$f; \
 	done

@@ -48,17 +48,21 @@
 ;;               it encounters an error during processing (including macro
 ;;               expansion error).  Useful while debugging, but should be
 ;;               turned off for the sites open to public.
+;;
+;;    :log-file - Path for editing history log.
+;;                Relative to the diretory where the database resides.
 
 (define (main args)
   (wiliki-main
    (make <wiliki>
-     :db-path "/home/shiro/data/wikidata.dbm"
+     :db-path "/var/lib/wiliki/wikidata.dbm"
+     :log-file "wikidata.log"
      :top-page "WiLiKi"
-     :title "MyWiliki"
-     :description "Shiro's Wiliki Site"
-     :style-sheet "wiliki.css"
-     :language 'jp
-     :charsets '((jp . euc-jp) (en . euc-jp))
+     :title "Debian WiLiKi"
+     :description "Debian's Default WiLiKi Site"
+;;;     :style-sheet "wiliki-sample.css"
+     :language 'en
+     :charsets '((jp . euc-jp) (en . utf-8))
      :image-urls '((#/^http:\/\/sourceforge.net\/sflogo/ allow))
      :debug-level 0
      )))
