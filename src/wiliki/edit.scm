@@ -50,7 +50,7 @@
            (a (@ (href ,(url "wiki-license")))
               "wiki-license")
            " for more information."))
-     ,@(buttons) ,@(donttouch-checkbox)
+     ,@(buttons) ;; ,@(donttouch-checkbox)
      (br)
      (input (@ (type hidden) (name c) (value c)))
      (input (@ (type hidden) (name p) (value ,pagename)))

@@ -129,7 +129,7 @@
                (display (ref page 'content)))))
         (donttouch (get-keyword :donttouch option #f)))
     (dbm-put! db key s)
-    (unless donttouch
+    (unless #f ; donttouch
       (let1 r (alist-delete key
                             (read-from-string
                              (dbm-get db *recent-changes* "()")))
