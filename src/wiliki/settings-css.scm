@@ -25,7 +25,9 @@
         css-name)))
 
 (define (css-config defaults)
-  (let ((current (settings:get 'css)))
+  (let ((current (or (settings:get 'css)
+                     (ref (with-module wiliki (wiliki))
+                          'style-sheet))))
     `((tr (@ (class "css-setting"))
           (td "CSS: ")
           (td (select (@ (name "css-select"))
