@@ -218,20 +218,21 @@
 
 ;; A regex for uris. Even readable.
 (define *uri-regex*
-  (string->regexp
-   (string-append
-    "(\\[(\\S+) ([^\\]]+)\\])" ; [url text]
-    "|"
-    "(\\[(\\S+)\\])" ; [url]
-    "|"
-    "("
-    "(http|https|ftp|afs|news|nntp|mid|cid"
-    "|mailto|wais|prospero|telnet|gopher|irc)"
-    ":(//)?"
-    "[-a-zA-Z0-9/@=+$_~*.,;:?!\\'\"()&#%]+" ; Full url chars according to RFC
-    "[-a-zA-Z0-9/@=+$_~*]" ; No punctuation at the end of the URL
-    ")"
-    )))
+  (let ((schemes (string-append "(http|https|ftp|afs|news|nntp|mid|cid"
+                                "|mailto|wais|prospero|telnet|gopher|irc)")))
+    (string->regexp
+     (string-append
+      "(\\[(" schemes "\\S+) ([^\\]]+)\\])" ; [url text]
+      "|"
+      "(\\[(" schemes "\\S+)\\])" ; [url]
+      "|"
+      "("
+      schemes
+      ":(//)?"
+      "[-a-zA-Z0-9/@=+$_~*.,;:?!\\'\"()&#%]+" ; Full url chars according to RFC
+      "[-a-zA-Z0-9/@=+$_~*]" ; No punctuation at the end of the URL
+      ")"
+      ))))
 
 ;; Find wiki name in the line.
 ;; Correctly deal with nested "[[" and "]]"'s.
@@ -258,11 +259,11 @@
      cons
      (lambda (match seed)
        (cond
-        ((match 1) (cons `(a (@ (href ,(match 2))) ,(match 3))
+        ((match 1) (cons `(a (@ (href ,(match 2))) ,(match 4))
                          seed))
-        ((match 4) (cons `(a (@ (href ,(match 5))) ,(match 5))
+        ((match 5) (cons `(a (@ (href ,(match 6))) ,(match 6))
                          seed))
-        ((match 6) (cons `(a (@ (href ,(match 6))) ,(match 6))
+        ((match 8) (cons `(a (@ (href ,(match 8))) ,(match 8))
                          seed))))
      seed line))
   (define (nl line seed)
