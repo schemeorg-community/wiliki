@@ -290,6 +290,15 @@
          seed
          (cons `(strong ,@(reverse! (nl (match 1) '()))) seed)))
      seed line))
+  (define (teletype line seed)
+    (regexp-fold
+     #/{{{([^\}]+)}}}/
+     bold
+     (lambda (match seed)
+       (if (or (not (match 1)) (string-null? (match 1)))
+         seed
+         (cons `(tt ,@(reverse! (nl (match 1) '()))) seed)))
+     seed line))
   (define (bracket line seed)
     (if (string-null? line)
       seed
@@ -300,9 +309,9 @@
               (bracket rest
                        (append (reverse! (parameterize ((fmt-context ctx))
                                            (fmt-wikiname wikiname)))
-                               (bold pre seed)))
-              (bold rest (bold pre seed))))
-          (bold line seed)))))
+                               (teletype pre seed)))
+              (teletype rest (bold pre seed))))
+          (teletype line seed)))))
   (define (smacro line seed)
     (if (string-null? line)
       seed
