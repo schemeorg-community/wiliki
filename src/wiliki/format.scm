@@ -395,7 +395,10 @@
              (error "internal error: unknown token type?")))))))
 
   (define (open-comment-quote line ctx cont)
-    (let* ((name (substring line 3 (string-length line)))
+    (let* ((match (rxmatch #/^<<<(\[\[)?([^\]]*)(\]\])?$/ line))
+           (name (if match
+                     (rxmatch-substring match 2)
+                     (substring line 3 (string-length line))))
            (new-ctx (list 'blockquote))
            (image (with-module wiliki
                     (wiliki:user-image name)))
