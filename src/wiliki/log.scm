@@ -152,7 +152,7 @@
                           #f)
                          ((string-prefix? "C " line)
                           (when acc (push! entries (reverse! acc)))
-                          (if (string-prefix? pick-prefix line)
+                          (if (string-prefix-ci? pick-prefix line)
                             (list line)
                             #f))
                          (acc (cons line acc))
