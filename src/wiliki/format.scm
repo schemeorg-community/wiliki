@@ -39,6 +39,7 @@
   (use gauche.parameter)
   (use gauche.charconv)
   (use gauche.sequence)
+  (use wiliki.format-scheme)
   (export <wiliki-formatter>
           <wiliki-page>
           wiliki:persistent-page?
@@ -337,6 +338,7 @@
           ((string-null? line)               '(null))
           ((string=? "----" line)            '(hr))
           ((string=? "{{{" line)             '(open-verb))
+          ((string=? "{{{scheme" line)       '(open-scheme))
           ((string=? "<<<" line)             '(open-quote))
           ((and (string=? ">>>" line)
                 (memq 'blockquote ctx))      '(close-quote))
@@ -370,6 +372,8 @@
             ((hr)   (block (next-token ctx) ctx (cons '(hr) seed)))
             ((open-verb)
              (verb ctx (>> block ctx seed)))
+            ((open-scheme)
+             (scheme ctx (>> block ctx seed)))
             ((open-quote)
              (blockquote ctx (>> block ctx seed)))
             ((close-quote)
@@ -393,6 +397,18 @@
       (if (or (eof-object? line)
               (equal? "}}}" line))
         (cont (next-token ctx) ctx `(pre ,@(reverse! r)))
+        (loop (generator)
+              (list* "\n" (tree->string (expand-tab line)) r)))))
+
+  (define (scheme ctx cont)
+    (let loop ((line (generator)) (r '()))
+      (if (or (eof-object? line)
+              (equal? "}}}" line))
+        (cont (next-token ctx)
+              ctx
+              (format-scheme-code (reverse! r)
+                                  (with-module wiliki
+                                     (wiliki:scheme-keywords))))
         (loop (generator)
               (list* "\n" (tree->string (expand-tab line)) r)))))
 
@@ -579,7 +595,8 @@
              line)
             ((string-prefix? ";;" line)
              (rec (getline) r))
-            ((string=? "{{{" line)
+            ((or (string=? "{{{" line)
+                 (string=? "{{{scheme" line))
              (if (null? r)
                (begin (set! verbatim #t) line)
                (begin (ungetline line) (string-concatenate-reverse r))))

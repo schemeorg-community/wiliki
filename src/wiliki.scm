@@ -158,6 +158,8 @@
                 :init-form (or (x->integer (get-meta "SERVER_PORT")) 80))
    (script-name :accessor script-name-of :init-keyword :script-name
                 :init-form (or (get-meta "SCRIPT_NAME") "/wiliki.cgi"))
+   (scheme-keyword-page :init-value "scheme-keywords"
+                        :init-keyword :scheme-keyword-page)
    ;; debug level
    (debug-level :accessor debug-level    :init-keyword :debug-level
                 :init-value 0)
@@ -219,6 +221,39 @@
 
 ;; For export
 (define wiliki:self-url url)
+
+;; The scheme keywords
+(define (wiliki:scheme-keywords)
+  (define (collect-keywords line seed)
+    (let ((in-keywords? (car seed))
+          (keywords (cdr seed)))
+      (cond
+       ((string-prefix? ";" line)
+        seed)
+       ((string-prefix-ci? "* names:" line)
+        (cons #f keywords))
+       ((string-prefix-ci? "* keywords:" line)
+        (cons #t keywords))
+       ((#/^ *([^ ]+) +([^ ]+) *$/ line)
+        => (lambda (match)
+             (cons in-keywords?
+                   (cons (list (string->symbol (string-downcase (rxmatch-substring match 1)))
+                               in-keywords?
+                               (rxmatch-substring match 2))
+                         keywords))))
+       ((#/^([^ ]+) +$/ line)
+        => (lambda (match)
+             (cons in-keywords?
+                   (cons (list (string->symbol (string-downcase (rxmatch-substring match 1)))
+                               in-keywords?
+                               #f)
+                         keywords))))
+       (else
+        seed))))
+  (let ((page (wiliki-db-get (ref (wiliki) 'scheme-keyword-page))))
+    (if page
+        (cdr (wiliki:page-lines-fold page collect-keywords (cons #t '())))
+        #f)))
 
 ;; Convenient wrapper
 (define (with-db thunk . rwmode)
@@ -435,7 +470,8 @@
 
   (define (normal line)
     (cond ((eof-object? line))
-          ((string=? line "{{{")
+          ((or (string=? line "{{{")
+               (string=? line "{{{scheme"))
            (print line)
            (verbatim (read-line)))
           (else

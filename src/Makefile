@@ -15,7 +15,8 @@ SCMFILES = wiliki.scm \
            wiliki/rss.scm \
            wiliki/rssmix.scm \
            wiliki/pasttime.scm \
-	   wiliki/version.scm
+	   wiliki/version.scm \
+	   wiliki/format-scheme.scm
 
 TARGET = $(SCMFILES) wiliki/msgs.jp dbm/gdbm-ci.scm
 
