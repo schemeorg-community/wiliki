@@ -406,7 +406,7 @@
                     (div (@ (class "portrait"))
                          ,@(if image
                                `((img (@ (src ,image)
-                                         (alt ,name))))
+                                         (alt ""))))
                                '())
                          (p (a (@ (href ,(with-module wiliki
                                            (wiliki:user-page name))))
