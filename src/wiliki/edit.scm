@@ -248,6 +248,8 @@
                       mtime)))
       (handle-conflict))
      (else
+      (if (banned-content-page? (wiliki) pagename)
+          (set! logmsg "Anti-spam maintenance"))
       (update-page content)))))
 
 (define (conflict-page page diff content logmsg donttouch)
