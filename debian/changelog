@@ -1,3 +1,13 @@
+wiliki (0.5-tekili-5) unstable; urgency=low
+
+  * Allow normal link markup in comments.
+  * Use correct time formatting for the history.
+  * Don't show the username in comments twice.
+  * Allow more urls in bracket syntax.
+  * Make interwikiname page configureable.
+
+ -- Jorgen Schaefer <forcer@debian.org>  Thu, 16 Sep 2004 19:54:49 +0200
+
 wiliki (0.5-tekili-4) unstable; urgency=low
   
     * Added scheme-keyword-page support.
