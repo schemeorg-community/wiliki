@@ -45,6 +45,7 @@
   (use wiliki.mcatalog)
   (use wiliki.format)
   (use wiliki.db)
+  (use wiliki.settings)
   (export <wiliki> wiliki-main wiliki
           wiliki:language-link wiliki:self-url
           wiliki:top-link wiliki:edit-link wiliki:history-link
@@ -163,6 +164,8 @@
                         :init-keyword :scheme-keyword-page)
    (interwikiname :init-value "InterWikiName"
                   :init-keyword :interwikiname)
+   (cookie-name   :init-value "WiLiKi"
+                  :init-keyword :cookie-name)
    ;; debug level
    (debug-level :accessor debug-level    :init-keyword :debug-level
                 :init-value 0)
@@ -712,6 +715,9 @@
        (parameterize
            ((wiliki self)
             (lang   (or language (language-of self))))
+         (settings:parse-cookies! (ref self 'cookie-name)
+                                  (get-meta "HTTP_COOKIE")
+                                  (get-meta "HTTP_COOKIE2"))
         (cgi-output-character-encoding (output-charset))
         (textdomain (lang))
         (cond
@@ -741,6 +747,8 @@
          ((equal? command "s")
           (with-db
            (cut cmd-search (cgi-get-parameter "key" param :convert cv-in))))
+         ((equal? command "settings")
+          (with-db (cut cmd-settings (wiliki) param)))
          ((equal? command "c")
           (with-db
            (cut
