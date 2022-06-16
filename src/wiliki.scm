@@ -693,18 +693,22 @@
                               "")))
                      results))))))))
 
-(define (cmd-lwp-view key)
-  (let ((page (wiliki-db-get key #f)))
-    `(,(cgi-header
-        :content-type #`"text/plain; charset=,(output-charset)")
-      ,#`"title: ,|key|\n"
-      ,#`"wiliki-lwp-version: ,|*lwp-version*|\n"
-      ,(if page
-           `(,#`"mtime: ,(ref page 'mtime)\n"
-             "\n"
-             ,(ref page 'content))
-           `(,#`"mtime: 0\n"
-             "\n")))))
+(define (cmd-lwp-view key old-time)
+  (and-let* ((logfile (log-file-path (wiliki)))
+             (page (wiliki-db-get key #f))
+             (picked (wiliki-log-pick-from-file key logfile)))
+    (let* ((entries (wiliki-log-entries-after picked old-time))
+           (reverted (wiliki-log-revert* entries (ref page 'content))))
+      `(,(cgi-header
+          :content-type #`"text/plain; charset=,(output-charset)")
+        ,#`"title: ,|key|\n"
+        ,#`"wiliki-lwp-version: ,|*lwp-version*|\n"
+        ,(if page
+             `(,#`"mtime: ,(ref page 'mtime)\n"
+               "\n"
+               ,(string-join reverted "\n"))
+             `(,#`"mtime: 0\n"
+               "\n"))))))
 
 ;; Retrieve requested page name.
 ;; The pagename can be specified in one of the following ways:
@@ -767,7 +771,11 @@
          ((or (not command) (eq? command #t))
           (with-db (cut cmd-view pagename)))
          ((equal? command "lv")
-          (with-db (cut cmd-lwp-view pagename)))
+          (with-db (cut cmd-lwp-view
+                        pagename
+                        (cgi-get-parameter "t" param
+                                           :convert x->integer
+                                           :default 0))))
          ((equal? command "e")
           (with-db (cut cmd-edit pagename)))
          ((equal? command "a")

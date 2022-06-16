@@ -68,7 +68,12 @@
                                          (cv-out pagename)
                                          (ref entry 'timestamp))))
                           "View")
-                  " this version] "
+                  " this version, "
+                  `(a (@ (href ,(url "p=~a&c=lv&t=~a"
+                                     (cv-out pagename)
+                                     (ref entry 'timestamp))))
+                      "source")
+                  "] "
                   (if (eq? first entry)
                     `("[Diff to ",(diff-to-prev entry prev-timestamp)"]")
                     `("[Diff to ",(diff-to-current entry)

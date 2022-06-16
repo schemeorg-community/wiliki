@@ -222,13 +222,13 @@
                      ,@(edit-form #t pagename
                                   content mtime logmsg donttouch)))))
 
-    (define (handle-banned-content content)
+    (define (handle-banned-content bad-content)
       (html-page (make <wiliki-page>
                    :title pagename
                    :content
                    `((p (strong (@ (class "permission-denied"))
                                 "Commit failed: Your page contained the following banned content: "
-                                content))
+                                ,bad-content))
                      ,@(edit-form #t pagename
                                   content mtime logmsg donttouch)))))
 
@@ -243,8 +243,8 @@
      ((and (banned-content-page? (wiliki) pagename)
            (not (banned-content-passphrase? (wiliki) logmsg)))
       (handle-banned-content-permission-denied))
-     ;((banned-content (wiliki) content)
-     ; => handle-banned-content)
+     ((banned-content (wiliki) logmsg content)
+      => handle-banned-content)
      ((and (ref p 'mtime)
            (not (eqv? (ref p 'mtime)
                       mtime)))

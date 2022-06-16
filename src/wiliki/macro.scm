@@ -166,9 +166,13 @@
   `((a (@ (href ,(format "http://srfi.schemers.org/srfi-~a/srfi-~a.html" n n)))
        ,(format "srfi-~a" n))))
 
-(define-reader-macro (r5rs s)
-  (let ((entry (assoc s r5rs-index)))
-    (if s
+(define-reader-macro (label . name)
+  `((span (@ (id ,(apply string-append name))))))
+
+(define-reader-macro (r5rs . sl)
+  (let* ((s (string-join sl " "))
+         (entry (assoc s r5rs-index)))
+    (if entry
         `((a (@ (href ,(format "http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-~a"
                                (cadr entry))))
              ,s))

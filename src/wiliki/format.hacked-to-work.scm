@@ -130,14 +130,14 @@
                 "      "
                 "       ")))
     (lambda (line)
-      (let loop ((line   line)
+      (let loip ((line   line)
                  (r      '())
                  (column 0))
         (receive (before after) (string-scan line #\tab 'both)
           (if before
               (let* ((newcol  (+ (string-length before) column))
                      (fill-to (inexact->exact (* (ceiling (/ newcol 8)) 8))))
-                (loop after
+                (loip after
                       (list* (vector-ref pads (- fill-to newcol)) before r)
                       fill-to))
               (reverse (cons line r))))))
@@ -335,15 +335,7 @@
 (define (wiliki:calculate-heading-id headings)
   (string-append "H-" (number->string (hash headings) 36)))
 
-;; Read lines from generator and format them.  This is the main
-;; parser/transformer of WiLiKi format.
-(define (fmt-lines generator)
-
-  (define (h-level m)
-    (- (rxmatch-end m 1) (rxmatch-start m 1)))
-  (define (l-level ctx)
-    (count (cut memq <> '(ul ol)) ctx))
-
+; lex manually lifted from fmt-lines by mmmdonuts in debugging attempt
   (define (lex line ctx)
     (cond ((eof-object? line)                '(eof))
           ((string-null? line)               '(null))
@@ -362,6 +354,17 @@
           ((rxmatch #/^\|\|(.*)\|\|$/ line)  => (cut cons 'table <>))
           (else                              `(p . ,line))))
 
+;; Read lines from generator and format them.  This is the main
+;; parser/transformer of WiLiKi format.
+(define (fmt-lines generator)
+
+  (define (h-level m)
+    (- (rxmatch-end m 1) (rxmatch-start m 1)))
+  (define (l-level ctx)
+    (count (cut memq <> '(ul ol)) ctx))
+
+  ; lex was here
+
   (define token-buffer #f)
   (define (next-token ctx) (or token-buffer (lex (generator) ctx)))
   (define (pushback-token tok) (set! token-buffer tok))
@@ -373,11 +376,11 @@
 
   ;; Block-level loop
   (define (block tok ctx seed)
-    (let loop ((tok tok) (seed seed) (p '()))
+    (letrec ((leap (lambda (tok seed p)
       (if (eq? (token-type tok) 'p)
-        (loop (next-token ctx) seed
+        (leap (next-token ctx) seed
               (fmt-line ctx (token-value tok) p))
-        (let1 seed (if (null? p) seed (cons `(p ,@(reverse! p)) seed))
+        (let ((seed (if (null? p) seed (cons `(p ,@(reverse! p)) seed))))
           (case (token-type tok)
             ((eof)  (reverse! seed))
             ((null) (block (next-token ctx) ctx seed))
@@ -403,7 +406,8 @@
             ((table)
              (table tok ctx (>> block ctx seed)))
             (else
-             (error "internal error: unknown token type?")))))))
+             (error "internal error: unknown token type?"))))) )))
+      (leap tok seed '())))
 
   (define (open-comment-quote line ctx cont)
     (let* ((match (rxmatch #/^<<<(\[\[)?([^\]]*)(\]\])?$/ line))
@@ -543,17 +547,17 @@
             )))
 
       (define (fold-content tok ctx items)
-        (let loop ((tok (next-token ctx))
+        (let lojp ((tok (next-token ctx))
                    (ctx ctx)
                    (r (fmt-line ctx ((token-value tok) 'after) '())))
           (case (token-type tok)
             ((eof null hr heading ul ol close-quote)
              (wrap tok (cons `(li ,@(reverse! r)) items) ctx))
-            ((open-quote) (blockquote ctx (>> loop ctx r)))
-            ((open-verb) (verb ctx (>> loop ctx r)))
-            ((table) (table tok ctx (>> loop ctx r)))
-            ((dl) (def-item tok ctx (>> loop ctx r)))
-            (else (loop (next-token ctx) ctx
+            ((open-quote) (blockquote ctx (>> lojp ctx r)))
+            ((open-verb) (verb ctx (>> lojp ctx r)))
+            ((table) (table tok ctx (>> lojp ctx r)))
+            ((dl) (def-item tok ctx (>> lojp ctx r)))
+            (else (lojp (next-token ctx) ctx
                         (fmt-line ctx (token-value tok) r))))))
 
       ;; body of list-item
@@ -568,7 +572,7 @@
   (define (def-item-rec tok ctx seed)
     (let ((dt (reverse! (fmt-line ctx ((token-value tok) 1) '())))
           (dd (fmt-line ctx ((token-value tok) 2) '())))
-      (let loop ((tok (next-token ctx))
+      (let lokp ((tok (next-token ctx))
                  (p dd)
                  (r '()))
         (define (fold-p)
@@ -581,28 +585,28 @@
           ((dl)
            (def-item-rec tok ctx (finish)))
           ((p)
-           (loop (next-token ctx)
+           (lokp (next-token ctx)
                  (fmt-line ctx (token-value tok) p) r))
           ((pre)
            (pre tok ctx (lambda (tok ctx elt)
-                          (loop tok '() (cons elt (fold-p))))))
+                          (lokp tok '() (cons elt (fold-p))))))
           ((open-quote)
            (blockquote ctx (lambda (tok ctx elt)
-                             (loop tok '() (cons elt (fold-p))))))
+                             (lokp tok '() (cons elt (fold-p))))))
           ((open-verb)
            (verb ctx (lambda (tok ctx elt)
-                       (loop tok '() (cons elt (fold-p))))))
+                       (lokp tok '() (cons elt (fold-p))))))
           ((table)
            (table tok ctx (lambda (tok ctx elt)
-                            (loop tok '() (cons elt (fold-p))))))
+                            (lokp tok '() (cons elt (fold-p))))))
           ((ul ol)
            (if (> (h-level (token-value tok))
                   (l-level ctx))
              (list-item tok ctx (lambda (tok ctx elt)
-                                  (loop tok '() (cons elt (fold-p)))))
+                                  (lokp tok '() (cons elt (fold-p)))))
              (values tok (finish))))
           (else
-           (loop (next-token ctx) ;; commented out by mmmdonuts to fix bug when upgrading Gauche: '()
+           (lokp (next-token ctx) ;; commented out by mmmdonuts: '()
                  (fmt-line ctx (token-value tok) p) r))
           ))))
 

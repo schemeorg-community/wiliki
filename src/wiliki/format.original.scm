@@ -602,7 +602,7 @@
                                   (loop tok '() (cons elt (fold-p)))))
              (values tok (finish))))
           (else
-           (loop (next-token ctx) ;; commented out by mmmdonuts to fix bug when upgrading Gauche: '()
+           (loop (next-token ctx) '()
                  (fmt-line ctx (token-value tok) p) r))
           ))))
 
