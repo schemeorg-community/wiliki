@@ -1,5 +1,5 @@
-GOSH = /usr/bin/gosh
-GAUCHE_CONFIG = /usr/bin/gauche-config
+GOSH = gosh
+GAUCHE_CONFIG = gauche-config
 INSTALL_TYPE = site
 INSTALL = /usr/bin/install -c
 
