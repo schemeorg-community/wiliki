@@ -4,19 +4,33 @@ INSTALL_TYPE = site
 INSTALL = /usr/bin/install -c
 
 SCMFILES = wiliki.scm \
+	   wiliki/banned-content.scm \
 	   wiliki/db.scm \
 	   wiliki/edit.scm \
+	   wiliki/format-scheme.scm \
+	   wiliki/format.fixed.scm \
+	   wiliki/format.hacked-to-work.scm \
+	   wiliki/format.original.scm \
+	   wiliki/log.scm \
+	   wiliki/macro.scm \
+	   wiliki/mcatalog.scm \
+	   wiliki/pasttime.scm \
+	   wiliki/rss.scm \
+	   wiliki/rssmix.scm \
+	   wiliki/settings-css.scm \
+	   wiliki/settings-user-name.scm \
+	   wiliki/settings.scm \
+	   wiliki/util.scm \
+	   wiliki/version.scm \
            wiliki/format.scm \
            wiliki/history.scm \
            wiliki/log.scm \
-           wiliki/mcatalog.scm \
            wiliki/macro.scm \
-           wiliki/util.scm \
+           wiliki/mcatalog.scm \
+           wiliki/pasttime.scm \
            wiliki/rss.scm \
            wiliki/rssmix.scm \
-           wiliki/pasttime.scm \
-	   wiliki/version.scm \
-	   wiliki/format-scheme.scm
+           wiliki/util.scm
 
 TARGET = $(SCMFILES) wiliki/msgs.jp dbm/gdbm-ci.scm
 
